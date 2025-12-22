@@ -367,6 +367,8 @@ export default function BlightPage() {
                   alt="Conception et visualisation"
                   fill
                   className="object-contain"
+                  loading="lazy"
+                  quality={85}
                 />
               </motion.div>
               <motion.div
@@ -428,6 +430,9 @@ export default function BlightPage() {
                   alt="Fabrication et validation"
                   width={600}
                   height={400}
+                  loading="lazy"
+                  quality={85}
+                  sizes="(max-width: 768px) 100vw, 600px"
                   className="w-full h-full object-contain rotate-90"
                 />
               </motion.div>
@@ -491,6 +496,9 @@ export default function BlightPage() {
                   alt="Installation et résultat final"
                   width={400}
                   height={250}
+                  loading="lazy"
+                  quality={85}
+                  sizes="(max-width: 768px) 100vw, 400px"
                   className="w-full h-full object-contain"
                   style={{ transform: 'scale(1.15)' }}
                 />
@@ -557,6 +565,9 @@ export default function BlightPage() {
                   width={400}
                   height={300}
                   className="w-full h-auto object-cover"
+                  loading="lazy"
+                  quality={85}
+                  sizes="(max-width: 768px) 100vw, 400px"
                 />
               </motion.div>
               <div>
@@ -632,6 +643,9 @@ export default function BlightPage() {
                     alt="Fabrication et validation"
                     width={600}
                     height={400}
+                    loading="lazy"
+                    quality={85}
+                    sizes="(max-width: 768px) 100vw, 600px"
                     className="w-full h-auto object-contain rotate-90"
                   />
                 </motion.div>
@@ -708,6 +722,9 @@ export default function BlightPage() {
                   alt="Installation et résultat final"
                   width={400}
                   height={300}
+                  loading="lazy"
+                  quality={85}
+                  sizes="(max-width: 768px) 100vw, 400px"
                   className="w-full h-auto object-contain"
                 />
               </motion.div>
