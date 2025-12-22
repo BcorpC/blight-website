@@ -1,0 +1,735 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', 'General Sans', system-ui, sans-serif;
+  background: #050505;
+  color: #FFFFFF;
+  overflow-x: hidden;
+}
+
+/* Film grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  animation: grain 8s steps(10) infinite;
+}
+
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -5%); }
+  20% { transform: translate(-10%, 5%); }
+  30% { transform: translate(5%, -10%); }
+  40% { transform: translate(-5%, 15%); }
+  50% { transform: translate(-10%, 5%); }
+  60% { transform: translate(15%, 0); }
+  70% { transform: translate(0, 10%); }
+  80% { transform: translate(-15%, 0); }
+  90% { transform: translate(10%, 5%); }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 3D Perspective */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0B0B;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FF6B35;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FFB347;
+}
+
+/* Bouton BLIGHT – animation premium */
+.btn-blight {
+  border-radius: 30em;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  cursor: pointer;
+  color: #0B2A5B;
+  background: #ffffff;
+  box-shadow: 6px 6px 12px #c5c5c5,
+              -6px -6px 12px #ffffff;
+  transition: color 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-blight::before {
+  content: '';
+  width: 0;
+  height: 100%;
+  border-radius: 30em;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-image: linear-gradient(
+    to right,
+    #0B2A5B 0%,
+    #1E4ED8 100%
+  );
+  transition: width 0.5s ease;
+  display: block;
+  z-index: -1;
+}
+
+.btn-blight:hover {
+  color: #ffffff;
+}
+
+.btn-blight:hover::before {
+  width: 100%;
+}
+
+/* Bouton BLIGHT – Envoyer devis (From Uiverse.io by MuhammadHasann) */
+.btn-blight-submit {
+  --blight-dark: #0B2A5B;
+  --blight-light: #1E4ED8;
+  --border_radius: 9999px;
+  --transtion: 0.3s ease-in-out;
+
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 2rem;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border_radius);
+  transform-origin: center;
+  transform: scale(calc(1 + (var(--active, 0) * 0.08)));
+  transition: transform var(--transtion);
+}
+
+.btn-blight-submit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--blight-dark);
+  border-radius: var(--border_radius);
+  box-shadow:
+    inset 0 0.5px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.4),
+    0 6px 14px rgba(0, 0, 0, calc(0.4 - var(--active, 0))),
+    0 0 0 calc(var(--active, 0) * 0.35rem) rgba(30, 78, 216, 0.55);
+  transition: all var(--transtion);
+  z-index: 0;
+}
+
+.btn-blight-submit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(at 50% 90%, rgba(120,160,255,0.55) 0%, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(30,78,216,0.85) 0%, transparent 55%),
+    radial-gradient(at 0% 100%, rgba(11,42,91,0.9) 0%, transparent 55%);
+  opacity: var(--active, 0);
+  border-radius: var(--border_radius);
+  transition: opacity var(--transtion);
+  z-index: 1;
+}
+
+.btn-blight-submit:is(:hover, :focus-visible) {
+  --active: 1;
+}
+
+.btn-blight-submit:active {
+  transform: scale(1);
+}
+
+.btn-blight-submit .dots_border {
+  position: absolute;
+  inset: -2px;
+  border-radius: var(--border_radius);
+  overflow: hidden;
+  z-index: -1;
+}
+
+.btn-blight-submit .dots_border::before {
+  content: "";
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  transform-origin: left;
+  width: 100%;
+  height: 2rem;
+  background-color: white;
+  mask: linear-gradient(transparent 0%, white 120%);
+  animation: rotate-dots 2s linear infinite;
+}
+
+@keyframes rotate-dots {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.btn-blight-submit .sparkle {
+  position: relative;
+  z-index: 2;
+  width: 1.6rem;
+}
+
+.btn-blight-submit .sparkle .path {
+  fill: currentColor;
+  stroke: currentColor;
+  color: white;
+  transform-origin: center;
+}
+
+.btn-blight-submit:is(:hover, :focus) .sparkle .path {
+  animation: path-animate 1.5s linear 0.5s infinite;
+}
+
+@keyframes path-animate {
+  0%, 34%, 71%, 100% {
+    transform: scale(1);
+  }
+  17% {
+    transform: scale(1.2);
+  }
+  49% {
+    transform: scale(1.15);
+  }
+  83% {
+    transform: scale(1.25);
+  }
+}
+
+.btn-blight-submit .text_button {
+  position: relative;
+  z-index: 2;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  background-image: linear-gradient(
+    90deg,
+    rgba(255,255,255,1) 0%,
+    rgba(255,255,255,var(--active,0)) 120%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Bouton BLIGHT – Retour à l'accueil (From Uiverse.io by MuhammadHasann) */
+.btn-blight-return {
+  --blight-dark: #0B2A5B;
+  --blight-light: #1E4ED8;
+  --border_radius: 9999px;
+  --transtion: 0.3s ease-in-out;
+
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.5rem;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border_radius);
+  transform-origin: center;
+  transform: scale(calc(1 + (var(--active, 0) * 0.08)));
+  transition: transform var(--transtion);
+  text-decoration: none;
+}
+
+.btn-blight-return::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--blight-dark);
+  border-radius: var(--border_radius);
+  box-shadow:
+    inset 0 0.5px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.4),
+    0 6px 14px rgba(0, 0, 0, calc(0.4 - var(--active, 0))),
+    0 0 0 calc(var(--active, 0) * 0.35rem) rgba(30, 78, 216, 0.55);
+  transition: all var(--transtion);
+  z-index: 0;
+}
+
+.btn-blight-return::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(at 50% 90%, rgba(120,160,255,0.55) 0%, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(30,78,216,0.85) 0%, transparent 55%),
+    radial-gradient(at 0% 100%, rgba(11,42,91,0.9) 0%, transparent 55%);
+  opacity: var(--active, 0);
+  border-radius: var(--border_radius);
+  transition: opacity var(--transtion);
+  z-index: 1;
+}
+
+.btn-blight-return:is(:hover, :focus-visible) {
+  --active: 1;
+}
+
+.btn-blight-return:active {
+  transform: scale(1);
+}
+
+.btn-blight-return .dots_border {
+  position: absolute;
+  inset: -2px;
+  border-radius: var(--border_radius);
+  overflow: hidden;
+  z-index: -1;
+}
+
+.btn-blight-return .dots_border::before {
+  content: "";
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  transform-origin: left;
+  width: 100%;
+  height: 2rem;
+  background-color: white;
+  mask: linear-gradient(transparent 0%, white 120%);
+  animation: rotate-return 2s linear infinite;
+}
+
+@keyframes rotate-return {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.btn-blight-return .sparkle {
+  position: relative;
+  z-index: 2;
+  width: 1.2rem;
+}
+
+.btn-blight-return .sparkle .path {
+  fill: currentColor;
+  stroke: currentColor;
+  color: white;
+  transform-origin: center;
+}
+
+.btn-blight-return:is(:hover, :focus) .sparkle .path {
+  animation: path-return 1.5s linear 0.5s infinite;
+}
+
+@keyframes path-return {
+  0%, 34%, 71%, 100% {
+    transform: scale(1);
+  }
+  17% {
+    transform: scale(1.2);
+  }
+  49% {
+    transform: scale(1.15);
+  }
+  83% {
+    transform: scale(1.25);
+  }
+}
+
+.btn-blight-return .text_button {
+  position: relative;
+  z-index: 2;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  background-image: linear-gradient(
+    90deg,
+    rgba(255,255,255,1) 0%,
+    rgba(255,255,255,var(--active,0)) 120%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* === FORMULAIRE DEVIS BLIGHT === */
+/* From Uiverse.io by gharsh11032000 */
+.form-container {
+  width: 100%;
+  max-width: 720px;
+  background: linear-gradient(#0B2A5B, #0B2A5B) padding-box,
+              linear-gradient(145deg, transparent 35%, #e81cff, #40c9ff) border-box;
+  border: 2px solid transparent;
+  padding: 32px;
+  font-size: 14px;
+  font-family: inherit;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
+  border-radius: 16px;
+}
+
+.form-container button:active {
+  scale: 0.95;
+}
+
+.form-container .form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group.full {
+  grid-column: span 2;
+}
+
+.form-container .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.form-container .form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #717171;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.form-container .form-group input,
+.form-container .form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #fff;
+  font-family: inherit;
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-sizing: border-box;
+}
+
+.form-container .form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  resize: none;
+  color: #fff;
+  height: 96px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: transparent;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-container .form-group input::placeholder,
+.form-container .form-group textarea::placeholder {
+  opacity: 0.5;
+}
+
+.form-container .form-group input:focus,
+.form-container .form-group textarea:focus,
+.form-container .form-group select:focus {
+  outline: none;
+  border-color: #e81cff;
+}
+
+.form-container .form-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 16px;
+  font-size: inherit;
+  gap: 8px;
+  margin-top: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.form-container .form-submit-btn:hover {
+  background-color: #fff;
+  border-color: #fff;
+  color: #000;
+}
+
+@media (max-width: 640px) {
+  .form-container .form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === RÉSEAUX SOCIAUX BLIGHT === */
+/* From Uiverse.io by jamik-dev */
+.social-main-back {
+  position: absolute;
+  border-radius: 10px;
+  transform: rotate(90deg);
+  width: 11em;
+  height: 11em;
+  background: linear-gradient(270deg, #03a9f4, #cc39a4, #ffb5d2);
+  z-index: -2;
+  box-shadow: inset 0px 0px 180px 5px #ffffff;
+}
+
+.social-main {
+  display: flex;
+  flex-wrap: wrap;
+  width: 14em;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: transform 0.3s ease-in-out;
+  position: relative;
+}
+
+.social-card {
+  width: 60px;
+  height: 60px;
+  border-top-left-radius: 10px;
+  background: lightgrey;
+  transition: 0.4s ease-in-out, 0.2s background-color ease-in-out,
+    0.2s background-image ease-in-out;
+  background: rgba(255, 255, 255, 0.596);
+  backdrop-filter: blur(5px);
+  border: 1px solid transparent;
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-card .instagram {
+  opacity: 1;
+  transition: 0.2s ease-in-out;
+  fill: #cc39a4;
+}
+
+.social-card:nth-child(3) {
+  border-radius: 0px;
+}
+
+.social-card:nth-child(3) .facebook {
+  opacity: 1;
+  transition: 0.2s ease-in-out;
+  fill: #1877f2;
+}
+
+.social-card:nth-child(4) {
+  border-top-right-radius: 10px;
+  border-top-left-radius: 0px;
+}
+
+.social-card:nth-child(4) .linkedin {
+  opacity: 1;
+  transition: 0.2s ease-in-out;
+  fill: #0077b5;
+}
+
+.social-main:hover {
+  width: 14em;
+  cursor: pointer;
+  transform: rotate(-45deg);
+}
+
+.social-main:hover .social-main-back {
+  opacity: 0;
+}
+
+.social-main:hover .social-card {
+  margin: 0.2em;
+  border-radius: 10px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.social-main:hover .social-card svg {
+  transform: rotate(45deg);
+}
+
+.social-main:hover .social-text {
+  opacity: 0;
+  z-index: -3;
+}
+
+.social-main:hover .instagram {
+  opacity: 1;
+}
+
+.social-main:hover .facebook {
+  opacity: 1;
+}
+
+.social-main:hover .linkedin {
+  opacity: 1;
+}
+
+.social-card:nth-child(2):hover {
+  background-color: #cc39a4;
+}
+
+.social-card:nth-child(2):hover .instagram {
+  fill: white;
+}
+
+.social-card:nth-child(3):hover {
+  background-color: #1877f2;
+}
+
+.social-card:nth-child(3):hover .facebook {
+  fill: white;
+}
+
+.social-card:nth-child(4):hover {
+  background-color: #0077b5;
+}
+
+.social-card:nth-child(4):hover .linkedin {
+  fill: white;
+}
+
+.social-text {
+  position: absolute;
+  font-size: 0.7em;
+  transition: 0.4s ease-in-out;
+  color: black;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 0.33em;
+  z-index: 3;
+}
+
+/* === RÉSEAUX SOCIAUX BLIGHT === */
+/* From Uiverse.io by david-mohseni */
+.social-wrapper {
+  display: inline-flex;
+  list-style: none;
+  height: auto;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  justify-content: center;
+  align-items: center;
+}
+
+.social-wrapper .social-icon {
+  position: relative;
+  background: #fff;
+  border-radius: 50%;
+  margin: 10px;
+  width: 50px;
+  height: 50px;
+  font-size: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  text-decoration: none;
+}
+
+.social-wrapper .social-tooltip {
+  position: absolute;
+  top: 0;
+  font-size: 14px;
+  background: #fff;
+  color: #fff;
+  padding: 5px 8px;
+  border-radius: 5px;
+  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.social-wrapper .social-tooltip::before {
+  position: absolute;
+  content: "";
+  height: 8px;
+  width: 8px;
+  background: #fff;
+  bottom: -3px;
+  left: 50%;
+  transform: translate(-50%) rotate(45deg);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.social-wrapper .social-icon:hover .social-tooltip {
+  top: -45px;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.social-wrapper .social-icon:hover span,
+.social-wrapper .social-icon:hover .social-tooltip {
+  text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.1);
+}
+
+.social-wrapper .whatsapp:hover,
+.social-wrapper .whatsapp:hover .social-tooltip,
+.social-wrapper .whatsapp:hover .social-tooltip::before {
+  background: #25d366;
+  color: #fff;
+}
+
+.social-wrapper .x:hover,
+.social-wrapper .x:hover .social-tooltip,
+.social-wrapper .x:hover .social-tooltip::before {
+  background: #000;
+  color: #fff;
+}
+
+.social-wrapper .instagram:hover,
+.social-wrapper .instagram:hover .social-tooltip,
+.social-wrapper .instagram:hover .social-tooltip::before {
+  background: #e4405f;
+  color: #fff;
+}
+
