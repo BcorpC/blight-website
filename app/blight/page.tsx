@@ -28,7 +28,7 @@ export default function BlightPage() {
               transition={{ duration: 0.2 }}
             >
               <Image
-                src="/blight/Blight-logo-rev2-png1 2.png"
+                src="/blight/Blight-logo-rev2-png1%202.png"
                 alt="BLIGHT Logo"
                 fill
                 className="object-contain object-left"
@@ -424,7 +424,7 @@ export default function BlightPage() {
                 transition={{ duration: 0.3 }}
               >
                 <Image
-                  src="/blight/process/step-02-fabrication/fabrication-enseigne-led..JPG"
+                  src="/blight/process/step-02-fabrication/fabrication-enseigne-led.JPG"
                   alt="Fabrication et validation"
                   width={600}
                   height={400}
@@ -628,7 +628,7 @@ export default function BlightPage() {
                   transition={{ duration: 0.3 }}
                 >
                   <Image
-                    src="/blight/process/step-02-fabrication/fabrication-enseigne-led..JPG"
+                    src="/blight/process/step-02-fabrication/fabrication-enseigne-led.JPG"
                     alt="Fabrication et validation"
                     width={600}
                     height={400}
