@@ -421,19 +421,19 @@ export default function BlightPage() {
               whileHover={{ y: -5 }}
             >
               <motion.div
-                className="relative rounded-xl overflow-hidden shadow-md mb-4 h-48 flex items-center justify-center"
+                className="relative rounded-xl overflow-hidden shadow-md mb-4 h-64 flex items-center justify-center"
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.3 }}
               >
                 <Image
                   src="/blight/process/step-02-fabrication/fabrication-enseigne-led.JPG"
                   alt="Fabrication et validation"
-                  width={600}
-                  height={400}
+                  width={400}
+                  height={600}
                   loading="lazy"
                   quality={85}
-                  sizes="(max-width: 768px) 100vw, 600px"
-                  className="w-full h-full object-contain rotate-90"
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  className="w-full h-full object-contain"
                 />
               </motion.div>
               <motion.div
@@ -634,19 +634,19 @@ export default function BlightPage() {
             >
               <div className="lg:order-2">
                 <motion.div
-                  className="relative rounded-2xl overflow-hidden shadow-lg border border-gray-100 max-w-md mx-auto"
+                  className="relative rounded-2xl overflow-hidden shadow-lg border border-gray-100 max-w-sm mx-auto"
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                 >
                   <Image
                     src="/blight/process/step-02-fabrication/fabrication-enseigne-led.JPG"
                     alt="Fabrication et validation"
-                    width={600}
-                    height={400}
+                    width={400}
+                    height={600}
                     loading="lazy"
                     quality={85}
-                    sizes="(max-width: 768px) 100vw, 600px"
-                    className="w-full h-auto object-contain rotate-90"
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    className="w-full h-auto object-contain"
                   />
                 </motion.div>
               </div>
