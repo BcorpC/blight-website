@@ -350,7 +350,7 @@ export default function BlightPage() {
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {/* Étape 1 */}
             <motion.div
-              className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col"
+              className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col h-full"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -358,7 +358,7 @@ export default function BlightPage() {
               whileHover={{ y: -5 }}
             >
               <motion.div
-                className="relative rounded-xl overflow-hidden shadow-md mb-4 h-48 flex items-center justify-center"
+                className="relative rounded-xl overflow-hidden shadow-md mb-4 h-56 flex items-center justify-center"
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.3 }}
               >
@@ -413,7 +413,7 @@ export default function BlightPage() {
 
             {/* Étape 2 */}
             <motion.div
-              className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col"
+              className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col h-full"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -421,19 +421,17 @@ export default function BlightPage() {
               whileHover={{ y: -5 }}
             >
               <motion.div
-                className="relative rounded-xl overflow-hidden shadow-md mb-4 h-64 flex items-center justify-center"
+                className="relative rounded-xl overflow-hidden shadow-md mb-4 h-56 flex items-center justify-center"
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.3 }}
               >
                 <Image
                   src="/blight/process/step-02-fabrication/fabrication-enseigne-led.JPG"
                   alt="Fabrication et validation"
-                  width={400}
-                  height={600}
+                  fill
+                  className="object-contain"
                   loading="lazy"
                   quality={85}
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className="w-full h-full object-contain"
                 />
               </motion.div>
               <motion.div
@@ -479,7 +477,7 @@ export default function BlightPage() {
 
             {/* Étape 3 */}
             <motion.div
-              className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col"
+              className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col h-full"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -487,20 +485,17 @@ export default function BlightPage() {
               whileHover={{ y: -5 }}
             >
               <motion.div
-                className="relative rounded-xl overflow-hidden shadow-md mb-4 h-48 flex items-center justify-center"
+                className="relative rounded-xl overflow-hidden shadow-md mb-4 h-56 flex items-center justify-center"
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.3 }}
               >
                 <Image
                   src="/blight/process/step-03-installation/installation-enseigne-finale..jpeg"
                   alt="Installation et résultat final"
-                  width={400}
-                  height={250}
+                  fill
+                  className="object-contain"
                   loading="lazy"
                   quality={85}
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className="w-full h-full object-contain"
-                  style={{ transform: 'scale(1.15)' }}
                 />
               </motion.div>
               <motion.div
