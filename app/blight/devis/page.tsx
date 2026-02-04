@@ -64,10 +64,6 @@ export default function BlightDevisPage() {
         img: '/public2/images/enseigne/caisson-lumineux.jpg',
       },
       {
-        value: 'Drapeau lumineux',
-        label: 'Drapeau lumineux',
-      },
-      {
         value: 'Je ne sais pas',
         label: 'Je ne sais pas (BLIGHT propose)',
       },
