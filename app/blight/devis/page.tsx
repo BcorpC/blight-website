@@ -4,10 +4,13 @@ import { useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useLanguage } from '@/lib/LanguageContext'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
-type YesNo = 'Oui' | 'Non' | ''
+type YesNo = 'Oui' | 'Non' | 'Yes' | 'No' | ''
 
 export default function BlightDevisPage() {
+  const { t, language } = useLanguage()
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [errors, setErrors] = useState<string[]>([])
 
@@ -49,26 +52,26 @@ export default function BlightDevisPage() {
   const enseigneOptions = useMemo(
     () => [
       {
-        value: 'Lettres en relief',
-        label: 'Lettres en relief',
+        value: language === 'fr' ? 'Lettres en relief' : 'Relief letters',
+        label: t.devis.options.signTypes.reliefLetters,
         img: '/public2/images/enseigne/lettres-relief.jpg',
       },
       {
-        value: 'Néon flexible',
-        label: 'Néon flexible',
+        value: language === 'fr' ? 'Néon flexible' : 'Flexible neon',
+        label: t.devis.options.signTypes.neonFlex,
         img: '/public2/images/enseigne/neon-flex.jpg',
       },
       {
-        value: 'Caisson lumineux',
-        label: 'Caisson lumineux',
+        value: language === 'fr' ? 'Caisson lumineux' : 'Light box',
+        label: t.devis.options.signTypes.lightBox,
         img: '/public2/images/enseigne/caisson-lumineux.jpg',
       },
       {
-        value: 'Je ne sais pas',
-        label: 'Je ne sais pas (BLIGHT propose)',
+        value: language === 'fr' ? 'Je ne sais pas' : "I don't know",
+        label: t.devis.options.signTypes.dontKnow,
       },
     ],
-    []
+    [t, language]
   )
 
   const onChangeValue = (
@@ -81,31 +84,33 @@ export default function BlightDevisPage() {
   const validateClientSide = () => {
     const e: string[] = []
     const req = (v: string, label: string) => {
-      if (!String(v || '').trim()) e.push(`${label} est obligatoire.`)
+      if (!String(v || '').trim()) e.push(t.devis.validation.required(label))
     }
 
-    req(formData.nom, 'Nom')
-    req(formData.prenom, 'Prénom')
-    req(formData.commerce, 'Nom du commerce')
-    req(formData.telephone, 'Téléphone')
-    req(formData.email, 'Email')
-    req(formData.adresse, 'Adresse complète du commerce')
+    req(formData.nom, t.devis.form.lastName.replace(' *', ''))
+    req(formData.prenom, t.devis.form.firstName.replace(' *', ''))
+    req(formData.commerce, t.devis.form.businessName.replace(' *', ''))
+    req(formData.telephone, t.devis.form.phone.replace(' *', ''))
+    req(formData.email, t.devis.form.email.replace(' *', ''))
+    req(formData.adresse, t.devis.form.address.replace(' *', ''))
 
-    req(formData.typeEnseigne, 'Type d’enseigne')
-    req(formData.emplacement, 'Emplacement')
-    req(formData.lumineuse, 'Enseigne lumineuse')
-    req(formData.largeurCm, 'Largeur (cm)')
-    req(formData.hauteurCm, 'Hauteur (cm)')
-    req(formData.delai, 'Délai de livraison')
+    req(formData.typeEnseigne, t.devis.sections.signType.replace(' *', ''))
+    req(formData.emplacement, t.devis.form.location.replace(' *', ''))
+    req(formData.lumineuse, t.devis.form.lightSign.replace(' *', ''))
+    req(formData.largeurCm, t.devis.form.width.replace(' *', ''))
+    req(formData.hauteurCm, t.devis.form.height.replace(' *', ''))
+    req(formData.delai, t.devis.sections.delivery.replace(' *', ''))
 
-    req(formData.logoClient, 'Avez-vous un logo ?')
-    if (formData.logoClient === 'Oui') {
-      if (!logoFile) e.push('Merci de joindre le logo (PDF, AI, SVG, PNG, JPG).')
+    req(formData.logoClient, t.devis.form.haveLogo.replace(' *', ''))
+    const yesValue = t.devis.options.yesNo.yes
+    const noValue = t.devis.options.yesNo.no
+    if (formData.logoClient === yesValue) {
+      if (!logoFile) e.push(t.devis.validation.logoFileRequired)
     }
-    if (formData.logoClient === 'Non') {
-      req(formData.creationLogoBlight, 'Souhaitez-vous que BLIGHT réalise votre logo ?')
-      if (formData.creationLogoBlight === 'Oui') {
-        req(formData.descriptionLogo, 'Description précise du logo souhaité')
+    if (formData.logoClient === noValue) {
+      req(formData.creationLogoBlight, t.devis.form.blightCreateLogo.replace(' *', ''))
+      if (formData.creationLogoBlight === yesValue) {
+        req(formData.descriptionLogo, t.devis.form.logoDescription.replace(' *', ''))
       }
     }
 
@@ -133,49 +138,51 @@ export default function BlightDevisPage() {
     }
 
     // Construire le corps de l'email avec toutes les informations
+    const yesValue = t.devis.options.yesNo.yes
+    const noValue = t.devis.options.yesNo.no
     const emailBody = [
-      'Demande de devis BLIGHT',
+      t.devis.email.sections.title,
       '',
-      '=== INFORMATIONS CLIENT ===',
-      `Nom et prénom: ${formData.nom} ${formData.prenom}`,
-      `Nom du commerce: ${formData.commerce}`,
-      `Téléphone: ${formData.telephone}`,
-      `Email: ${formData.email}`,
-      `Adresse complète: ${formData.adresse}`,
+      t.devis.email.sections.clientInfo,
+      `${t.devis.email.fields.name} ${formData.nom} ${formData.prenom}`,
+      `${t.devis.email.fields.business} ${formData.commerce}`,
+      `${t.devis.email.fields.phone} ${formData.telephone}`,
+      `${t.devis.email.fields.email} ${formData.email}`,
+      `${t.devis.email.fields.address} ${formData.adresse}`,
       '',
-      '=== TYPE D\'ENSEIGNE ===',
-      `Type: ${formData.typeEnseigne}`,
+      t.devis.email.sections.signType,
+      `${t.devis.email.fields.type} ${formData.typeEnseigne}`,
       '',
-      '=== PROJET ===',
-      `Emplacement: ${formData.emplacement}`,
-      `Enseigne lumineuse: ${formData.lumineuse}`,
-      `Dimensions: ${formData.largeurCm} cm × ${formData.hauteurCm} cm${formData.profondeurCm ? ` × ${formData.profondeurCm} cm` : ''}`,
+      t.devis.email.sections.project,
+      `${t.devis.email.fields.location} ${formData.emplacement}`,
+      `${t.devis.email.fields.lightSign} ${formData.lumineuse}`,
+      `${t.devis.email.fields.dimensions} ${formData.largeurCm} cm × ${formData.hauteurCm} cm${formData.profondeurCm ? ` × ${formData.profondeurCm} cm` : ''}`,
       '',
-      '=== DÉLAIS ===',
-      `Délai choisi: ${formData.delai}`,
+      t.devis.email.sections.delivery,
+      `${t.devis.email.fields.deliveryTime} ${formData.delai}`,
       '',
-      '=== LOGO ===',
-      `Logo client fourni: ${formData.logoClient}`,
-      ...(formData.logoClient === 'Oui' && logoFile
-        ? [`Fichier logo: ${logoFile.name} (à joindre manuellement)`]
+      t.devis.email.sections.logo,
+      `${t.devis.email.fields.logoProvided} ${formData.logoClient}`,
+      ...(formData.logoClient === yesValue && logoFile
+        ? [`${t.devis.email.fields.logoFile} ${logoFile.name} ${t.devis.email.logoFileNote}`]
         : []),
-      ...(formData.logoClient === 'Non'
+      ...(formData.logoClient === noValue
         ? [
-            `Création logo BLIGHT: ${formData.creationLogoBlight}`,
-            ...(formData.creationLogoBlight === 'Oui'
-              ? [`Description logo: ${formData.descriptionLogo}`]
+            `${t.devis.email.fields.logoCreation} ${formData.creationLogoBlight}`,
+            ...(formData.creationLogoBlight === yesValue
+              ? [`${t.devis.email.fields.logoDescription} ${formData.descriptionLogo}`]
               : []),
           ]
         : []),
       ...(formData.precisions
-        ? ['', '=== PRÉCISIONS COMPLÉMENTAIRES ===', formData.precisions]
+        ? ['', t.devis.email.sections.additional, formData.precisions]
         : []),
     ]
       .filter(Boolean)
       .join('\n')
 
     const subject = encodeURIComponent(
-      `Demande de devis – ${formData.commerce} – ${formData.nom} ${formData.prenom}`
+      t.devis.email.subject(formData.commerce, `${formData.nom} ${formData.prenom}`)
     )
     const body = encodeURIComponent(emailBody)
 
@@ -238,15 +245,17 @@ export default function BlightDevisPage() {
             </motion.div>
           </Link>
           <motion.div
+            className="flex items-center gap-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
+            <LanguageSwitcher />
             <Link
               href="/blight"
               className="btn-blight px-4 py-2 text-sm font-medium"
             >
-              Retour à l&apos;accueil
+              {t.devis.header.backToHome}
             </Link>
           </motion.div>
         </nav>
@@ -268,11 +277,11 @@ export default function BlightDevisPage() {
                 animation: 'gradient-shift 4s ease infinite',
               }}
             >
-              Demande de devis
+              {t.devis.title}
             </motion.span>
           </motion.h1>
           <p className="text-lg text-[#6E6E73] leading-relaxed">
-            Formulaire interne ultra simple (1–2 minutes) pour envoyer une demande de devis BLIGHT.
+            {t.devis.description}
           </p>
         </div>
 
@@ -281,11 +290,11 @@ export default function BlightDevisPage() {
           <form onSubmit={handleSubmit} className="form">
             {/* 1. Informations client */}
             <div className="form-group full">
-              <p className="text-white font-semibold text-base mb-1">1) Informations client</p>
+              <p className="text-white font-semibold text-base mb-1">{t.devis.sections.clientInfo}</p>
             </div>
 
             <div className="form-group">
-              <label htmlFor="nom">Nom *</label>
+              <label htmlFor="nom">{t.devis.form.lastName}</label>
               <input
                 type="text"
                 id="nom"
@@ -293,12 +302,12 @@ export default function BlightDevisPage() {
                 required
                 value={formData.nom}
                 onChange={onChangeValue}
-                placeholder="Votre nom"
+                placeholder={t.devis.placeholders.lastName}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="prenom">Prénom *</label>
+              <label htmlFor="prenom">{t.devis.form.firstName}</label>
               <input
                 type="text"
                 id="prenom"
@@ -306,12 +315,12 @@ export default function BlightDevisPage() {
                 required
                 value={formData.prenom}
                 onChange={onChangeValue}
-                placeholder="Votre prénom"
+                placeholder={t.devis.placeholders.firstName}
               />
             </div>
 
             <div className="form-group full">
-              <label htmlFor="commerce">Nom du commerce *</label>
+              <label htmlFor="commerce">{t.devis.form.businessName}</label>
               <input
                 type="text"
                 id="commerce"
@@ -319,12 +328,12 @@ export default function BlightDevisPage() {
                 required
                 value={formData.commerce}
                 onChange={onChangeValue}
-                placeholder="Nom du commerce"
+                placeholder={t.devis.placeholders.businessName}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="telephone">Téléphone *</label>
+              <label htmlFor="telephone">{t.devis.form.phone}</label>
               <input
                 type="tel"
                 id="telephone"
@@ -332,12 +341,12 @@ export default function BlightDevisPage() {
                 required
                 value={formData.telephone}
                 onChange={onChangeValue}
-                placeholder="06 00 00 00 00"
+                placeholder={t.devis.placeholders.phone}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">Email *</label>
+              <label htmlFor="email">{t.devis.form.email}</label>
               <input
                 type="email"
                 id="email"
@@ -345,26 +354,26 @@ export default function BlightDevisPage() {
                 required
                 value={formData.email}
                 onChange={onChangeValue}
-                placeholder="contact@email.com"
+                placeholder={t.devis.placeholders.email}
               />
             </div>
 
             <div className="form-group full">
-              <label htmlFor="adresse">Adresse complète du commerce *</label>
+              <label htmlFor="adresse">{t.devis.form.address}</label>
               <textarea
                 id="adresse"
                 name="adresse"
                 required
                 value={formData.adresse}
                 onChange={onChangeValue}
-                placeholder="N°, rue, code postal, ville…"
+                placeholder={t.devis.placeholders.address}
               />
             </div>
 
             <div className="form-group full">
-              <p className="text-white font-semibold text-base mb-1">2) Type d’enseigne *</p>
+              <p className="text-white font-semibold text-base mb-1">{t.devis.sections.signType}</p>
               <p className="text-xs text-white/70 mb-3">
-                Les images servent uniquement à reconnaître la forme, pas le style.
+                {t.devis.sections.signTypeNote}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -414,13 +423,17 @@ export default function BlightDevisPage() {
 
             {/* 3. Questions simples projet */}
             <div className="form-group full">
-              <p className="text-white font-semibold text-base mb-1">3) Projet</p>
+              <p className="text-white font-semibold text-base mb-1">{t.devis.sections.project}</p>
             </div>
 
             <div className="form-group full">
-              <label>Emplacement *</label>
+              <label>{t.devis.form.location}</label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {['Intérieur', 'Extérieur', 'Intérieur + extérieur'].map((v) => {
+                {[
+                  t.devis.options.locations.interior,
+                  t.devis.options.locations.exterior,
+                  t.devis.options.locations.both,
+                ].map((v) => {
                   const isSelected = formData.emplacement === v
                   return (
                     <button
@@ -442,9 +455,9 @@ export default function BlightDevisPage() {
             </div>
 
             <div className="form-group full">
-              <label>Enseigne lumineuse *</label>
+              <label>{t.devis.form.lightSign}</label>
               <div className="grid grid-cols-2 gap-2">
-                {(['Oui', 'Non'] as const).map((v) => {
+                {([t.devis.options.yesNo.yes, t.devis.options.yesNo.no] as const).map((v) => {
                   const isSelected = formData.lumineuse === v
                   return (
                     <button
@@ -466,7 +479,7 @@ export default function BlightDevisPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="largeurCm">Largeur (cm) *</label>
+              <label htmlFor="largeurCm">{t.devis.form.width}</label>
               <input
                 type="number"
                 id="largeurCm"
@@ -475,12 +488,12 @@ export default function BlightDevisPage() {
                 min="0"
                 value={formData.largeurCm}
                 onChange={onChangeValue}
-                placeholder="Ex : 200"
+                placeholder={t.devis.placeholders.width}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="hauteurCm">Hauteur (cm) *</label>
+              <label htmlFor="hauteurCm">{t.devis.form.height}</label>
               <input
                 type="number"
                 id="hauteurCm"
@@ -489,12 +502,12 @@ export default function BlightDevisPage() {
                 min="0"
                 value={formData.hauteurCm}
                 onChange={onChangeValue}
-                placeholder="Ex : 50"
+                placeholder={t.devis.placeholders.height}
               />
             </div>
 
             <div className="form-group full">
-              <label htmlFor="profondeurCm">Profondeur (cm) (optionnel)</label>
+              <label htmlFor="profondeurCm">{t.devis.form.depth}</label>
               <input
                 type="number"
                 id="profondeurCm"
@@ -502,18 +515,18 @@ export default function BlightDevisPage() {
                 min="0"
                 value={formData.profondeurCm}
                 onChange={onChangeValue}
-                placeholder="Ex : 10"
+                placeholder={t.devis.placeholders.depth}
               />
             </div>
 
             {/* 4. Délais */}
             <div className="form-group full">
-              <p className="text-white font-semibold text-base mb-1">4) Délais de livraison *</p>
-              <p className="text-xs text-white/70 mb-3">Le choix du délai peut impacter le prix final.</p>
+              <p className="text-white font-semibold text-base mb-1">{t.devis.sections.delivery}</p>
+              <p className="text-xs text-white/70 mb-3">{t.devis.sections.deliveryNote}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
-                  { v: 'Standard', label: 'Standard (plus économique)' },
-                  { v: 'Accéléré', label: 'Accéléré (plus rapide)' },
+                  { v: language === 'fr' ? 'Standard' : 'Standard', label: t.devis.options.delivery.standard },
+                  { v: language === 'fr' ? 'Accéléré' : 'Accelerated', label: t.devis.options.delivery.accelerated },
                 ].map((o) => {
                   const isSelected = formData.delai === o.v
                   return (
@@ -537,10 +550,10 @@ export default function BlightDevisPage() {
 
             {/* 5. Logo */}
             <div className="form-group full">
-              <p className="text-white font-semibold text-base mb-1">5) Logo</p>
-              <label>Avez-vous un logo ? *</label>
+              <p className="text-white font-semibold text-base mb-1">{t.devis.sections.logo}</p>
+              <label>{t.devis.form.haveLogo}</label>
               <div className="grid grid-cols-2 gap-2">
-                {(['Oui', 'Non'] as const).map((v) => {
+                {([t.devis.options.yesNo.yes, t.devis.options.yesNo.no] as const).map((v) => {
                   const isSelected = formData.logoClient === v
                   return (
                     <button
@@ -551,14 +564,16 @@ export default function BlightDevisPage() {
                         isSelected ? 'border-white/70 bg-white/10 text-white' : 'border-white/20 bg-white/5 text-white/80',
                       ].join(' ')}
                       onClick={() => {
+                        const yesValue = t.devis.options.yesNo.yes
+                        const noValue = t.devis.options.yesNo.no
                         setFormData((p) => ({
                           ...p,
                           logoClient: v,
-                          ...(v === 'Oui'
+                          ...(v === yesValue
                             ? { creationLogoBlight: '', descriptionLogo: '' }
                             : {}),
                         }))
-                        if (v === 'Non') {
+                        if (v === noValue) {
                           setLogoFile(null)
                           if (logoInputRef.current) logoInputRef.current.value = ''
                         }
@@ -573,9 +588,9 @@ export default function BlightDevisPage() {
               <input type="hidden" name="logoClient" value={formData.logoClient} />
             </div>
 
-            {formData.logoClient === 'Oui' ? (
+            {formData.logoClient === t.devis.options.yesNo.yes ? (
               <div className="form-group full">
-                <label>Joindre le logo (PDF, AI, SVG, PNG, JPG) *</label>
+                <label>{t.devis.form.attachLogo}</label>
                 <div
                   className={[
                     'rounded-xl border border-dashed px-4 py-4 transition',
@@ -602,9 +617,9 @@ export default function BlightDevisPage() {
                   }}
                 >
                   <p className="text-sm font-semibold text-white">
-                    {logoFile ? `Fichier sélectionné : ${logoFile.name}` : 'Glisser-déposer ou toucher pour choisir un fichier'}
+                    {logoFile ? `${t.devis.form.logoFileSelected} ${logoFile.name}` : t.devis.form.logoFileDrop}
                   </p>
-                  <p className="text-xs text-white/60 mt-1">Le fichier sera joint automatiquement à l’email interne BLIGHT.</p>
+                  <p className="text-xs text-white/60 mt-1">{t.devis.form.logoFileNote}</p>
                 </div>
                 <input
                   ref={logoInputRef}
@@ -616,14 +631,14 @@ export default function BlightDevisPage() {
               </div>
             ) : null}
 
-            {formData.logoClient === 'Non' ? (
+            {formData.logoClient === t.devis.options.yesNo.no ? (
               <>
                 <div className="form-group full">
-                  <label>Souhaitez-vous que BLIGHT réalise votre logo ? *</label>
+                  <label>{t.devis.form.blightCreateLogo}</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {[
-                      { v: 'Oui', label: 'Oui (90 € – 3 propositions maximum)' },
-                      { v: 'Non', label: 'Non' },
+                      { v: t.devis.options.yesNo.yes, label: t.devis.options.logoCreation.yes },
+                      { v: t.devis.options.yesNo.no, label: t.devis.options.logoCreation.no },
                     ].map((o) => {
                       const isSelected = formData.creationLogoBlight === o.v
                       return (
@@ -656,12 +671,12 @@ export default function BlightDevisPage() {
                   />
                 </div>
 
-                {formData.creationLogoBlight === 'Oui' ? (
+                {formData.creationLogoBlight === t.devis.options.yesNo.yes ? (
                   <div className="form-group full">
                     <label htmlFor="descriptionLogo">
-                      Description précise du logo souhaité *{' '}
+                      {t.devis.form.logoDescription}{' '}
                       <span className="text-white/60 font-normal">
-                        (nom, activité, couleurs, style, inspirations)
+                        {t.devis.form.logoDescriptionNote}
                       </span>
                     </label>
                     <textarea
@@ -670,7 +685,7 @@ export default function BlightDevisPage() {
                       required
                       value={formData.descriptionLogo}
                       onChange={onChangeValue}
-                      placeholder="Ex : “Boulangerie DUPONT, couleurs bleu & blanc, style minimal, inspiration enseignes parisiennes…”"
+                      placeholder={t.devis.placeholders.logoDescription}
                     />
                   </div>
                 ) : null}
@@ -678,14 +693,14 @@ export default function BlightDevisPage() {
             ) : null}
 
             <div className="form-group full">
-              <p className="text-white font-semibold text-base mb-1">6) Description libre</p>
-              <label htmlFor="precisions">Souhaitez-vous ajouter des précisions complémentaires ?</label>
+              <p className="text-white font-semibold text-base mb-1">{t.devis.sections.freeDescription}</p>
+              <label htmlFor="precisions">{t.devis.form.additionalInfo}</label>
               <textarea
                 id="precisions"
                 name="precisions"
                 value={formData.precisions}
                 onChange={onChangeValue}
-                placeholder="Optionnel : contraintes, accès, préférence de date…"
+                placeholder={t.devis.placeholders.additionalInfo}
               />
             </div>
 
@@ -693,7 +708,7 @@ export default function BlightDevisPage() {
             {status === 'error' && errors.length > 0 ? (
               <div className="form-group full">
                 <div className="rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3">
-                  <p className="text-sm font-semibold text-white mb-2">À corriger</p>
+                  <p className="text-sm font-semibold text-white mb-2">{t.devis.form.errorsTitle}</p>
                   <ul className="text-xs text-white/80 list-disc pl-5 space-y-1">
                     {errors.map((er, idx) => (
                       <li key={idx}>{er}</li>
@@ -707,10 +722,10 @@ export default function BlightDevisPage() {
               <div className="form-group full">
                 <div className="rounded-xl border border-emerald-300/40 bg-emerald-500/10 px-4 py-3">
                   <p className="text-sm font-semibold text-white">
-                    Application email ouverte
+                    {t.devis.form.successTitle}
                   </p>
                   <p className="text-xs text-white/70 mt-1">
-                    L'email est pré-rempli. Si vous avez un logo, joignez-le manuellement avant d'envoyer.
+                    {t.devis.form.successMessage}
                   </p>
                 </div>
               </div>
@@ -721,13 +736,13 @@ export default function BlightDevisPage() {
               className="form-submit-btn"
               disabled={status === 'sending'}
             >
-              {status === 'sending' ? 'Envoi…' : 'ENVOYER DEVIS'}
+              {status === 'sending' ? t.devis.form.sending : t.devis.form.submit}
             </button>
 
             {/* 8. Texte de sécurité */}
             <div className="form-group full">
               <p className="text-xs text-white/70">
-                Les choix techniques, matériaux, finitions et modes de transport sont définis par BLIGHT afin de garantir le meilleur rendu, le respect des délais et la durabilité.
+                {t.devis.form.securityNote}
               </p>
             </div>
           </form>
