@@ -56,3 +56,20 @@ npm run build
 - Framer Motion gère les micro-interactions et animations de hover
 - Le background utilise Canvas pour les gradients animés
 
+## 🧾 Formulaire devis BLIGHT (envoi email interne)
+
+Le formulaire “Demande de devis” (mobile-first) se trouve sur `app/blight/devis/page.tsx` et envoie les données vers une route API Next.js `app/api/devis/route.ts`.
+
+### Variables d’environnement (SMTP)
+
+Pour que l’envoi d’email fonctionne, configurez ces variables (en local dans votre `.env.local` et en production dans Vercel → **Settings → Environment Variables**) :
+
+- **SMTP_HOST** : ex `smtp.gmail.com`
+- **SMTP_PORT** : ex `465` (TLS) ou `587` (STARTTLS)
+- **SMTP_SECURE** : `true` si port 465, sinon `false`
+- **SMTP_USER** : email du compte expéditeur
+- **SMTP_PASS** : mot de passe SMTP / “App Password” (Gmail)
+- **SMTP_FROM** (optionnel) : ex `BLIGHT Devis <votre-email@gmail.com>` (par défaut = `SMTP_USER`)
+
+L’email est envoyé **uniquement** à `pro.blight00@gmail.com` (aucun email n’est envoyé au client).
+

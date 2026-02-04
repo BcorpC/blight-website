@@ -118,6 +118,17 @@ git push -u origin main
 - **Output Directory** : `.next` (déjà pré-rempli)
 - **Install Command** : `npm install` (déjà pré-rempli)
 
+### 4.3.1 (Important) Variables d’environnement – envoi email “Devis”
+
+Pour que le formulaire “Demande de devis” envoie bien un email interne, ajoutez dans Vercel → **Settings → Environment Variables** :
+
+- **SMTP_HOST** (ex : `smtp.gmail.com`)
+- **SMTP_PORT** (ex : `465` ou `587`)
+- **SMTP_SECURE** (`true` si 465, sinon `false`)
+- **SMTP_USER** (email du compte expéditeur)
+- **SMTP_PASS** (mot de passe SMTP / “App Password”)
+- **SMTP_FROM** (optionnel, sinon `SMTP_USER`)
+
 ### 4.4 Déployer !
 - Cliquez sur le gros bouton **"Deploy"**
 - Attendez 1-2 minutes pendant que Vercel construit votre site

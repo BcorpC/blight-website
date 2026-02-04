@@ -1,63 +1,185 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 
+type YesNo = 'Oui' | 'Non' | ''
+
 export default function BlightDevisPage() {
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [errors, setErrors] = useState<string[]>([])
+
   const [formData, setFormData] = useState({
+    // 1) Informations client
     nom: '',
     prenom: '',
     commerce: '',
     telephone: '',
     email: '',
     adresse: '',
+
+    // 2) Type d’enseigne
     typeEnseigne: '',
-    largeur: '',
-    hauteur: '',
-    texte: '',
-    complementaires: '',
+
+    // 3) Projet
+    emplacement: '',
+    lumineuse: '' as YesNo,
+    largeurCm: '',
+    hauteurCm: '',
+    profondeurCm: '',
+
+    // 4) Délais
+    delai: '',
+
+    // 5) Logo
+    logoClient: '' as YesNo,
+    creationLogoBlight: '', // Oui / Non (si pas de logo)
+    descriptionLogo: '',
+
+    // 6) Description libre
+    precisions: '',
   })
 
-  const handleChange = (
+  const logoInputRef = useRef<HTMLInputElement | null>(null)
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const enseigneOptions = useMemo(
+    () => [
+      {
+        value: 'Lettres en relief',
+        label: 'Lettres en relief',
+        img: '/public2/images/enseigne/lettres-relief.jpg',
+      },
+      {
+        value: 'Néon flexible',
+        label: 'Néon flexible',
+        img: '/public2/images/enseigne/neon-flex.jpg',
+      },
+      {
+        value: 'Caisson lumineux',
+        label: 'Caisson lumineux',
+        img: '/public2/images/enseigne/caisson-lumineux.jpg',
+      },
+      {
+        value: 'Drapeau lumineux',
+        label: 'Drapeau lumineux',
+      },
+      {
+        value: 'Je ne sais pas',
+        label: 'Je ne sais pas (BLIGHT propose)',
+      },
+    ],
+    []
+  )
+
+  const onChangeValue = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateClientSide = () => {
+    const e: string[] = []
+    const req = (v: string, label: string) => {
+      if (!String(v || '').trim()) e.push(`${label} est obligatoire.`)
+    }
+
+    req(formData.nom, 'Nom')
+    req(formData.prenom, 'Prénom')
+    req(formData.commerce, 'Nom du commerce')
+    req(formData.telephone, 'Téléphone')
+    req(formData.email, 'Email')
+    req(formData.adresse, 'Adresse complète du commerce')
+
+    req(formData.typeEnseigne, 'Type d’enseigne')
+    req(formData.emplacement, 'Emplacement')
+    req(formData.lumineuse, 'Enseigne lumineuse')
+    req(formData.largeurCm, 'Largeur (cm)')
+    req(formData.hauteurCm, 'Hauteur (cm)')
+    req(formData.delai, 'Délai de livraison')
+
+    req(formData.logoClient, 'Avez-vous un logo ?')
+    if (formData.logoClient === 'Oui') {
+      if (!logoFile) e.push('Merci de joindre le logo (PDF, AI, SVG, PNG, JPG).')
+    }
+    if (formData.logoClient === 'Non') {
+      req(formData.creationLogoBlight, 'Souhaitez-vous que BLIGHT réalise votre logo ?')
+      if (formData.creationLogoBlight === 'Oui') {
+        req(formData.descriptionLogo, 'Description précise du logo souhaité')
+      }
+    }
+
+    setErrors(e)
+    return e.length === 0
+  }
+
+  const handleDrop = (ev: React.DragEvent<HTMLDivElement>) => {
+    ev.preventDefault()
+    ev.stopPropagation()
+    setIsDragging(false)
+    const f = ev.dataTransfer.files?.[0]
+    if (!f) return
+    setLogoFile(f)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setStatus('idle')
+    setErrors([])
 
-    const subject = encodeURIComponent(
-      `Demande de devis - ${formData.commerce || formData.nom}`
-    )
+    if (!validateClientSide()) {
+      setStatus('error')
+      return
+    }
 
-    const body = encodeURIComponent(
-      `
-Demande de devis BLIGHT
+    setStatus('sending')
+    try {
+      const fd = new FormData()
+      Object.entries(formData).forEach(([k, v]) => fd.append(k, String(v ?? '')))
+      if (logoFile) fd.append('logoFichier', logoFile, logoFile.name)
 
-INFORMATIONS CLIENT
-Nom et prénom: ${formData.nom} ${formData.prenom}
-Nom du commerce: ${formData.commerce}
-Téléphone: ${formData.telephone}
-Email: ${formData.email}
-Adresse complète: ${formData.adresse}
+      const res = await fetch('/api/devis', {
+        method: 'POST',
+        body: fd,
+      })
 
-DÉTAILS DU PROJET
-Type d'enseigne: ${formData.typeEnseigne}
-Dimensions: ${formData.largeur} cm × ${formData.hauteur} cm
-Texte à afficher: ${formData.texte}
+      const data = (await res.json()) as { ok?: boolean; errors?: string[] }
+      if (!res.ok || !data?.ok) {
+        setErrors(data?.errors?.length ? data.errors : ["Une erreur est survenue lors de l’envoi."])
+        setStatus('error')
+        return
+      }
 
-INFORMATIONS COMPLÉMENTAIRES
-${formData.complementaires}
-    `.trim()
-    )
-
-    window.location.href = `mailto:pro.blight00@gmail.com?subject=${subject}&body=${body}`
+      setStatus('sent')
+      setLogoFile(null)
+      if (logoInputRef.current) logoInputRef.current.value = ''
+      setFormData({
+        nom: '',
+        prenom: '',
+        commerce: '',
+        telephone: '',
+        email: '',
+        adresse: '',
+        typeEnseigne: '',
+        emplacement: '',
+        lumineuse: '',
+        largeurCm: '',
+        hauteurCm: '',
+        profondeurCm: '',
+        delai: '',
+        logoClient: '',
+        creationLogoBlight: '',
+        descriptionLogo: '',
+        precisions: '',
+      })
+    } catch {
+      setErrors(['Erreur réseau. Merci de réessayer.'])
+      setStatus('error')
+    }
   }
 
   return (
@@ -125,35 +247,22 @@ ${formData.complementaires}
               Demande de devis
             </motion.span>
           </motion.h1>
-          <p className="text-lg text-[#6E6E73] leading-relaxed mb-6">
-            Décrivez votre projet d&apos;enseigne lumineuse.
-            <br />
-            Nous revenons vers vous rapidement.
+          <p className="text-lg text-[#6E6E73] leading-relaxed">
+            Formulaire interne ultra simple (1–2 minutes) pour envoyer une demande de devis BLIGHT.
           </p>
-          <motion.div
-            className="bg-[#F5F5F5] border border-[#D2D2D7] rounded-lg p-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-          >
-            <p className="text-sm">
-              <motion.strong
-                className="inline-block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent bg-[length:200%_auto]"
-                style={{
-                  backgroundPosition: '0% 50%',
-                  animation: 'gradient-shift 4s ease infinite',
-                }}
-              >
-                Le devis est facturé 30 €, 100 % déduit de la facture finale si le projet est
-                validé.
-              </motion.strong>
-            </p>
-          </motion.div>
         </div>
 
         {/* Form */}
         <div className="form-container">
           <form onSubmit={handleSubmit} className="form">
+            {/* 1. Informations client */}
+            <div className="form-group full">
+              <p className="text-white font-semibold text-base mb-1">1) Informations client</p>
+              <p className="text-xs text-white/70">
+                Ces informations sont indispensables pour la livraison et le traitement interne.
+              </p>
+            </div>
+
             <div className="form-group">
               <label htmlFor="nom">Nom *</label>
               <input
@@ -162,7 +271,7 @@ ${formData.complementaires}
                 name="nom"
                 required
                 value={formData.nom}
-                onChange={handleChange}
+                onChange={onChangeValue}
                 placeholder="Votre nom"
               />
             </div>
@@ -175,7 +284,7 @@ ${formData.complementaires}
                 name="prenom"
                 required
                 value={formData.prenom}
-                onChange={handleChange}
+                onChange={onChangeValue}
                 placeholder="Votre prénom"
               />
             </div>
@@ -188,7 +297,7 @@ ${formData.complementaires}
                 name="commerce"
                 required
                 value={formData.commerce}
-                onChange={handleChange}
+                onChange={onChangeValue}
                 placeholder="Nom du commerce"
               />
             </div>
@@ -201,7 +310,7 @@ ${formData.complementaires}
                 name="telephone"
                 required
                 value={formData.telephone}
-                onChange={handleChange}
+                onChange={onChangeValue}
                 placeholder="06 00 00 00 00"
               />
             </div>
@@ -214,151 +323,398 @@ ${formData.complementaires}
                 name="email"
                 required
                 value={formData.email}
-                onChange={handleChange}
+                onChange={onChangeValue}
                 placeholder="contact@email.com"
               />
             </div>
 
             <div className="form-group full">
               <label htmlFor="adresse">Adresse complète du commerce *</label>
-              <input
-                type="text"
+              <textarea
                 id="adresse"
                 name="adresse"
                 required
                 value={formData.adresse}
-                onChange={handleChange}
-                placeholder="Adresse complète"
+                onChange={onChangeValue}
+                placeholder="N°, rue, code postal, ville…"
               />
             </div>
 
             <div className="form-group full">
-              <label htmlFor="typeEnseigne">Type d&apos;enseigne *</label>
-              <select
-                id="typeEnseigne"
-                name="typeEnseigne"
-                required
-                value={formData.typeEnseigne}
-                onChange={handleChange}
-              >
-                <option value="">Sélectionner</option>
-                <option value="Néon LED (texte)">Néon LED (texte)</option>
-                <option value="Logo lumineux">Logo lumineux</option>
-                <option value="Panneau / boîtier lumineux">Panneau / boîtier lumineux</option>
-                <option value="Lettres lumineuses">Lettres lumineuses</option>
-              </select>
+              <p className="text-white font-semibold text-base mb-1">2) Type d’enseigne *</p>
+              <p className="text-xs text-white/70 mb-3">
+                Les images servent uniquement à reconnaître la forme, pas le style.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {enseigneOptions.map((opt) => {
+                  const isSelected = formData.typeEnseigne === opt.value
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() =>
+                        setFormData((p) => ({
+                          ...p,
+                          typeEnseigne: opt.value,
+                        }))
+                      }
+                      className={[
+                        'text-left rounded-xl border px-3 py-3 transition',
+                        'bg-white/5 hover:bg-white/10',
+                        isSelected ? 'border-white/70' : 'border-white/20',
+                      ].join(' ')}
+                      aria-pressed={isSelected}
+                    >
+                      <div className="flex items-center gap-3">
+                        {opt.img ? (
+                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-white/15">
+                            <Image
+                              src={opt.img}
+                              alt={opt.label}
+                              fill
+                              className="object-cover"
+                              sizes="56px"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-14 w-14 shrink-0 rounded-lg border border-dashed border-white/20 bg-white/5" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-white">{opt.label}</p>
+                          <p className="text-xs text-white/60">Sélection simple</p>
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+              <input type="hidden" name="typeEnseigne" value={formData.typeEnseigne} />
+            </div>
+
+            {/* 3. Questions simples projet */}
+            <div className="form-group full">
+              <p className="text-white font-semibold text-base mb-1">3) Projet</p>
+              <p className="text-xs text-white/70">Questions simples, zéro jargon.</p>
+            </div>
+
+            <div className="form-group full">
+              <label>Emplacement *</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {['Intérieur', 'Extérieur', 'Intérieur + extérieur'].map((v) => {
+                  const isSelected = formData.emplacement === v
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      className={[
+                        'rounded-lg border px-3 py-2 text-sm font-semibold transition',
+                        isSelected ? 'border-white/70 bg-white/10 text-white' : 'border-white/20 bg-white/5 text-white/80',
+                      ].join(' ')}
+                      onClick={() => setFormData((p) => ({ ...p, emplacement: v }))}
+                      aria-pressed={isSelected}
+                    >
+                      {v}
+                    </button>
+                  )
+                })}
+              </div>
+              <input type="hidden" name="emplacement" value={formData.emplacement} />
+            </div>
+
+            <div className="form-group full">
+              <label>Enseigne lumineuse *</label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['Oui', 'Non'] as const).map((v) => {
+                  const isSelected = formData.lumineuse === v
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      className={[
+                        'rounded-lg border px-3 py-2 text-sm font-semibold transition',
+                        isSelected ? 'border-white/70 bg-white/10 text-white' : 'border-white/20 bg-white/5 text-white/80',
+                      ].join(' ')}
+                      onClick={() => setFormData((p) => ({ ...p, lumineuse: v }))}
+                      aria-pressed={isSelected}
+                    >
+                      {v}
+                    </button>
+                  )
+                })}
+              </div>
+              <input type="hidden" name="lumineuse" value={formData.lumineuse} />
             </div>
 
             <div className="form-group">
-              <label htmlFor="largeur">Largeur (cm) *</label>
+              <label htmlFor="largeurCm">Largeur (cm) *</label>
               <input
                 type="number"
-                id="largeur"
-                name="largeur"
+                id="largeurCm"
+                name="largeurCm"
                 required
                 min="0"
-                value={formData.largeur}
-                onChange={handleChange}
+                value={formData.largeurCm}
+                onChange={onChangeValue}
                 placeholder="Ex : 200"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="hauteur">Hauteur (cm) *</label>
+              <label htmlFor="hauteurCm">Hauteur (cm) *</label>
               <input
                 type="number"
-                id="hauteur"
-                name="hauteur"
+                id="hauteurCm"
+                name="hauteurCm"
                 required
                 min="0"
-                value={formData.hauteur}
-                onChange={handleChange}
+                value={formData.hauteurCm}
+                onChange={onChangeValue}
                 placeholder="Ex : 50"
               />
             </div>
 
             <div className="form-group full">
-              <label htmlFor="texte">Texte à afficher *</label>
+              <label htmlFor="profondeurCm">Profondeur (cm) (optionnel)</label>
               <input
-                type="text"
-                id="texte"
-                name="texte"
-                required
-                value={formData.texte}
-                onChange={handleChange}
-                placeholder="Nom du commerce, slogan…"
+                type="number"
+                id="profondeurCm"
+                name="profondeurCm"
+                min="0"
+                value={formData.profondeurCm}
+                onChange={onChangeValue}
+                placeholder="Ex : 10"
               />
             </div>
+
+            {/* 4. Délais */}
+            <div className="form-group full">
+              <p className="text-white font-semibold text-base mb-1">4) Délais de livraison *</p>
+              <p className="text-xs text-white/70 mb-3">Le choix du délai peut impacter le prix final.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[
+                  { v: 'Standard', label: 'Standard (plus économique)' },
+                  { v: 'Accéléré', label: 'Accéléré (plus rapide)' },
+                ].map((o) => {
+                  const isSelected = formData.delai === o.v
+                  return (
+                    <button
+                      key={o.v}
+                      type="button"
+                      className={[
+                        'rounded-lg border px-3 py-2 text-sm font-semibold transition',
+                        isSelected ? 'border-white/70 bg-white/10 text-white' : 'border-white/20 bg-white/5 text-white/80',
+                      ].join(' ')}
+                      onClick={() => setFormData((p) => ({ ...p, delai: o.v }))}
+                      aria-pressed={isSelected}
+                    >
+                      {o.label}
+                    </button>
+                  )
+                })}
+              </div>
+              <input type="hidden" name="delai" value={formData.delai} />
+            </div>
+
+            {/* 5. Logo */}
+            <div className="form-group full">
+              <p className="text-white font-semibold text-base mb-1">5) Logo</p>
+              <label>Avez-vous un logo ? *</label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['Oui', 'Non'] as const).map((v) => {
+                  const isSelected = formData.logoClient === v
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      className={[
+                        'rounded-lg border px-3 py-2 text-sm font-semibold transition',
+                        isSelected ? 'border-white/70 bg-white/10 text-white' : 'border-white/20 bg-white/5 text-white/80',
+                      ].join(' ')}
+                      onClick={() => {
+                        setFormData((p) => ({
+                          ...p,
+                          logoClient: v,
+                          ...(v === 'Oui'
+                            ? { creationLogoBlight: '', descriptionLogo: '' }
+                            : {}),
+                        }))
+                        if (v === 'Non') {
+                          setLogoFile(null)
+                          if (logoInputRef.current) logoInputRef.current.value = ''
+                        }
+                      }}
+                      aria-pressed={isSelected}
+                    >
+                      {v}
+                    </button>
+                  )
+                })}
+              </div>
+              <input type="hidden" name="logoClient" value={formData.logoClient} />
+            </div>
+
+            {formData.logoClient === 'Oui' ? (
+              <div className="form-group full">
+                <label>Joindre le logo (PDF, AI, SVG, PNG, JPG) *</label>
+                <div
+                  className={[
+                    'rounded-xl border border-dashed px-4 py-4 transition',
+                    isDragging ? 'border-white/70 bg-white/10' : 'border-white/25 bg-white/5',
+                  ].join(' ')}
+                  onDragEnter={(ev) => {
+                    ev.preventDefault()
+                    setIsDragging(true)
+                  }}
+                  onDragOver={(ev) => {
+                    ev.preventDefault()
+                    setIsDragging(true)
+                  }}
+                  onDragLeave={(ev) => {
+                    ev.preventDefault()
+                    setIsDragging(false)
+                  }}
+                  onDrop={handleDrop}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => logoInputRef.current?.click()}
+                  onKeyDown={(ev) => {
+                    if (ev.key === 'Enter' || ev.key === ' ') logoInputRef.current?.click()
+                  }}
+                >
+                  <p className="text-sm font-semibold text-white">
+                    {logoFile ? `Fichier sélectionné : ${logoFile.name}` : 'Glisser-déposer ou toucher pour choisir un fichier'}
+                  </p>
+                  <p className="text-xs text-white/60 mt-1">Le fichier sera joint automatiquement à l’email interne BLIGHT.</p>
+                </div>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.ai,.svg,.png,.jpg,.jpeg,application/pdf,image/svg+xml,image/png,image/jpeg"
+                  onChange={(ev) => setLogoFile(ev.target.files?.[0] ?? null)}
+                />
+              </div>
+            ) : null}
+
+            {formData.logoClient === 'Non' ? (
+              <>
+                <div className="form-group full">
+                  <label>Souhaitez-vous que BLIGHT réalise votre logo ? *</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {[
+                      { v: 'Oui', label: 'Oui (90 € – 3 propositions maximum)' },
+                      { v: 'Non', label: 'Non' },
+                    ].map((o) => {
+                      const isSelected = formData.creationLogoBlight === o.v
+                      return (
+                        <button
+                          key={o.v}
+                          type="button"
+                          className={[
+                            'rounded-lg border px-3 py-2 text-sm font-semibold transition',
+                            isSelected
+                              ? 'border-white/70 bg-white/10 text-white'
+                              : 'border-white/20 bg-white/5 text-white/80',
+                          ].join(' ')}
+                          onClick={() =>
+                            setFormData((p) => ({
+                              ...p,
+                              creationLogoBlight: o.v,
+                            }))
+                          }
+                          aria-pressed={isSelected}
+                        >
+                          {o.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <input
+                    type="hidden"
+                    name="creationLogoBlight"
+                    value={formData.creationLogoBlight}
+                  />
+                </div>
+
+                {formData.creationLogoBlight === 'Oui' ? (
+                  <div className="form-group full">
+                    <label htmlFor="descriptionLogo">
+                      Description précise du logo souhaité *{' '}
+                      <span className="text-white/60 font-normal">
+                        (nom, activité, couleurs, style, inspirations)
+                      </span>
+                    </label>
+                    <textarea
+                      id="descriptionLogo"
+                      name="descriptionLogo"
+                      required
+                      value={formData.descriptionLogo}
+                      onChange={onChangeValue}
+                      placeholder="Ex : “Boulangerie DUPONT, couleurs bleu & blanc, style minimal, inspiration enseignes parisiennes…”"
+                    />
+                  </div>
+                ) : null}
+              </>
+            ) : null}
 
             <div className="form-group full">
-              <label htmlFor="complementaires">Informations complémentaires</label>
+              <p className="text-white font-semibold text-base mb-1">6) Description libre</p>
+              <label htmlFor="precisions">Souhaitez-vous ajouter des précisions complémentaires ?</label>
               <textarea
-                id="complementaires"
-                name="complementaires"
-                value={formData.complementaires}
-                onChange={handleChange}
-                placeholder="Décrivez votre projet, contraintes, délais…"
+                id="precisions"
+                name="precisions"
+                value={formData.precisions}
+                onChange={onChangeValue}
+                placeholder="Optionnel : contraintes, accès, préférence de date…"
               />
             </div>
 
-            <button type="submit" className="form-submit-btn">
-              Envoyer la demande
+            {/* Erreurs / Confirmation */}
+            {status === 'error' && errors.length > 0 ? (
+              <div className="form-group full">
+                <div className="rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3">
+                  <p className="text-sm font-semibold text-white mb-2">À corriger</p>
+                  <ul className="text-xs text-white/80 list-disc pl-5 space-y-1">
+                    {errors.map((er, idx) => (
+                      <li key={idx}>{er}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ) : null}
+
+            {status === 'sent' ? (
+              <div className="form-group full">
+                <div className="rounded-xl border border-emerald-300/40 bg-emerald-500/10 px-4 py-3">
+                  <p className="text-sm font-semibold text-white">
+                    Demande envoyée. Merci !
+                  </p>
+                  <p className="text-xs text-white/70 mt-1">
+                    L’email interne a été envoyé à BLIGHT.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            <button
+              type="submit"
+              className="form-submit-btn"
+              disabled={status === 'sending'}
+            >
+              {status === 'sending' ? 'Envoi…' : 'ENVOYER DEVIS'}
             </button>
+
+            {/* 8. Texte de sécurité */}
+            <div className="form-group full">
+              <p className="text-xs text-white/70">
+                Les choix techniques, matériaux, finitions et modes de transport sont définis par BLIGHT afin de garantir le meilleur rendu, le respect des délais et la durabilité.
+              </p>
+            </div>
           </form>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-[#D2D2D7] bg-white mt-24">
-        <div className="max-w-5xl mx-auto px-6 py-12">
-          <div className="flex flex-col items-center gap-6">
-            <ul className="social-wrapper">
-              <li>
-                <Link 
-                  href="https://wa.me/yournumber" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="social-icon whatsapp"
-                >
-                  <span className="social-tooltip">WhatsApp</span>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                  </svg>
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="https://www.x.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="social-icon x"
-                >
-                  <span className="social-tooltip">X</span>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="https://www.instagram.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="social-icon instagram"
-                >
-                  <span className="social-tooltip">Instagram</span>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                  </svg>
-                </Link>
-              </li>
-            </ul>
-            <p className="text-sm text-[#6E6E73]">
-              © 2026 BLIGHT. Tous droits réservés.
-            </p>
-          </div>
-        </div>
-      </footer>
     </main>
   )
 }
