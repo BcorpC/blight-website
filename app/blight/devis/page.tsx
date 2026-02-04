@@ -132,50 +132,78 @@ export default function BlightDevisPage() {
       return
     }
 
-    setStatus('sending')
-    try {
-      const fd = new FormData()
-      Object.entries(formData).forEach(([k, v]) => fd.append(k, String(v ?? '')))
-      if (logoFile) fd.append('logoFichier', logoFile, logoFile.name)
+    // Construire le corps de l'email avec toutes les informations
+    const emailBody = [
+      'Demande de devis BLIGHT',
+      '',
+      '=== INFORMATIONS CLIENT ===',
+      `Nom et prénom: ${formData.nom} ${formData.prenom}`,
+      `Nom du commerce: ${formData.commerce}`,
+      `Téléphone: ${formData.telephone}`,
+      `Email: ${formData.email}`,
+      `Adresse complète: ${formData.adresse}`,
+      '',
+      '=== TYPE D\'ENSEIGNE ===',
+      `Type: ${formData.typeEnseigne}`,
+      '',
+      '=== PROJET ===',
+      `Emplacement: ${formData.emplacement}`,
+      `Enseigne lumineuse: ${formData.lumineuse}`,
+      `Dimensions: ${formData.largeurCm} cm × ${formData.hauteurCm} cm${formData.profondeurCm ? ` × ${formData.profondeurCm} cm` : ''}`,
+      '',
+      '=== DÉLAIS ===',
+      `Délai choisi: ${formData.delai}`,
+      '',
+      '=== LOGO ===',
+      `Logo client fourni: ${formData.logoClient}`,
+      ...(formData.logoClient === 'Oui' && logoFile
+        ? [`Fichier logo: ${logoFile.name} (à joindre manuellement)`]
+        : []),
+      ...(formData.logoClient === 'Non'
+        ? [
+            `Création logo BLIGHT: ${formData.creationLogoBlight}`,
+            ...(formData.creationLogoBlight === 'Oui'
+              ? [`Description logo: ${formData.descriptionLogo}`]
+              : []),
+          ]
+        : []),
+      ...(formData.precisions
+        ? ['', '=== PRÉCISIONS COMPLÉMENTAIRES ===', formData.precisions]
+        : []),
+    ]
+      .filter(Boolean)
+      .join('\n')
 
-      const res = await fetch('/api/devis', {
-        method: 'POST',
-        body: fd,
-      })
+    const subject = encodeURIComponent(
+      `Demande de devis – ${formData.commerce} – ${formData.nom} ${formData.prenom}`
+    )
+    const body = encodeURIComponent(emailBody)
 
-      const data = (await res.json()) as { ok?: boolean; errors?: string[] }
-      if (!res.ok || !data?.ok) {
-        setErrors(data?.errors?.length ? data.errors : ["Une erreur est survenue lors de l’envoi."])
-        setStatus('error')
-        return
-      }
+    // Ouvrir l'application email native
+    window.location.href = `mailto:pro.blight00@gmail.com?subject=${subject}&body=${body}`
 
-      setStatus('sent')
-      setLogoFile(null)
-      if (logoInputRef.current) logoInputRef.current.value = ''
-      setFormData({
-        nom: '',
-        prenom: '',
-        commerce: '',
-        telephone: '',
-        email: '',
-        adresse: '',
-        typeEnseigne: '',
-        emplacement: '',
-        lumineuse: '',
-        largeurCm: '',
-        hauteurCm: '',
-        profondeurCm: '',
-        delai: '',
-        logoClient: '',
-        creationLogoBlight: '',
-        descriptionLogo: '',
-        precisions: '',
-      })
-    } catch {
-      setErrors(['Erreur réseau. Merci de réessayer.'])
-      setStatus('error')
-    }
+    setStatus('sent')
+    setLogoFile(null)
+    if (logoInputRef.current) logoInputRef.current.value = ''
+    setFormData({
+      nom: '',
+      prenom: '',
+      commerce: '',
+      telephone: '',
+      email: '',
+      adresse: '',
+      typeEnseigne: '',
+      emplacement: '',
+      lumineuse: '',
+      largeurCm: '',
+      hauteurCm: '',
+      profondeurCm: '',
+      delai: '',
+      logoClient: '',
+      creationLogoBlight: '',
+      descriptionLogo: '',
+      precisions: '',
+    })
   }
 
   return (
@@ -679,10 +707,10 @@ export default function BlightDevisPage() {
               <div className="form-group full">
                 <div className="rounded-xl border border-emerald-300/40 bg-emerald-500/10 px-4 py-3">
                   <p className="text-sm font-semibold text-white">
-                    Demande envoyée. Merci !
+                    Application email ouverte
                   </p>
                   <p className="text-xs text-white/70 mt-1">
-                    L’email interne a été envoyé à BLIGHT.
+                    L'email est pré-rempli. Si vous avez un logo, joignez-le manuellement avant d'envoyer.
                   </p>
                 </div>
               </div>
