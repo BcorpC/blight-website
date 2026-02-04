@@ -3,8 +3,11 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useLanguage } from '@/lib/LanguageContext'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 export default function BlightPage() {
+  const { t } = useLanguage()
   return (
     <main className="min-h-screen bg-white">
       {/* Minimal Header */}
@@ -38,6 +41,7 @@ export default function BlightPage() {
           </Link>
           
           <motion.div
+            className="flex items-center gap-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -48,9 +52,10 @@ export default function BlightPage() {
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
             >
-              Demander un devis
+              {t.header.requestQuote}
             </motion.button>
             </Link>
+            <LanguageSwitcher />
           </motion.div>
         </nav>
       </motion.header>
@@ -82,7 +87,7 @@ export default function BlightPage() {
                     ease: "easeInOut"
                   }}
                 >
-                  Enseignes lumineuses
+                  {t.hero.badge}
                 </motion.span>
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-blue-200/0 via-blue-200/30 to-blue-200/0"
@@ -110,7 +115,7 @@ export default function BlightPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
               >
-                L&apos;enseigne,{' '}
+                {t.hero.title1}{' '}
               </motion.span>
               <motion.span
                 className="inline-block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent bg-[length:200%_auto]"
@@ -122,7 +127,7 @@ export default function BlightPage() {
                   animation: 'gradient-shift 4s ease infinite',
                 }}
               >
-                &nbsp;repensée.
+                &nbsp;{t.hero.title2}
               </motion.span>
             </motion.h1>
 
@@ -138,7 +143,7 @@ export default function BlightPage() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8, duration: 0.6 }}
               >
-                BLIGHT conçoit et vend des enseignes lumineuses pour les professionnels.
+                {t.hero.description1}
               </motion.span>
               <br />
               <motion.span
@@ -147,7 +152,7 @@ export default function BlightPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.6 }}
               >
-                Un projet plus ambitieux est en préparation.
+                {t.hero.description2}
               </motion.span>
             </motion.p>
 
@@ -163,7 +168,7 @@ export default function BlightPage() {
                   whileHover={{ scale: 1.03, y: -3 }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  Demander un devis
+                  {t.hero.requestQuote}
                 </motion.button>
               </Link>
 
@@ -174,7 +179,7 @@ export default function BlightPage() {
                 transition={{ delay: 0.6, duration: 0.4 }}
                 whileHover={{ borderColor: 'rgb(99, 102, 241)', scale: 1.01 }}
               >
-                Projet en évolution. Ce que vous voyez aujourd&apos;hui n&apos;est que le début.
+                {t.hero.projectEvolution}
               </motion.div>
             </motion.div>
           </div>
@@ -193,21 +198,18 @@ export default function BlightPage() {
           >
             {[
               {
-                title: 'Enseignes lumineuses sur mesure',
-                description:
-                  'Conçues pour votre façade, votre contexte et votre activité. Lisibles, sobres et efficaces.',
+                title: t.features.customSigns.title,
+                description: t.features.customSigns.description,
                 icon: '✴️',
               },
               {
-                title: 'Logos lumineux',
-                description:
-                  'Reprise fidèle de votre identité visuelle, avec une lumière propre et maîtrisée.',
+                title: t.features.logos.title,
+                description: t.features.logos.description,
                 icon: '💡',
               },
               {
-                title: 'Panneaux, boîtiers et lettres LED',
-                description:
-                  'Solutions simples ou plus ambitieuses, pour être vu clairement, sans excès.',
+                title: t.features.panels.title,
+                description: t.features.panels.description,
                 icon: '🔠',
               },
             ].map((feature, index) => (
@@ -265,20 +267,14 @@ export default function BlightPage() {
                   animation: 'gradient-shift 4s ease infinite',
                 }}
               >
-                Ce que fait BLIGHT aujourd&apos;hui
+                {t.whatWeDo.title}
               </motion.span>
             </motion.h2>
             <p className="text-lg text-gray-600 mb-8 leading-relaxed text-center">
-              Nous concevons des enseignes lumineuses efficaces, propres et durables.
-              Chaque projet est pensé pour être visible, lisible et cohérent avec votre activité.
+              {t.whatWeDo.description}
             </p>
             <div className="space-y-4">
-                {[
-                  'Analyse du lieu, de la façade et du contexte urbain',
-                  'Conseil sur les dimensions, le type d\'enseigne et la lumière',
-                  'Accompagnement de la conception à la pose (en option)',
-                  'Suivi simple et échanges clairs, sans jargon',
-                ].map((item, index) => (
+                {t.whatWeDo.items.map((item, index) => (
                 <motion.div
                   key={index}
                   className="flex items-center gap-3"
@@ -338,11 +334,11 @@ export default function BlightPage() {
                   animation: 'gradient-shift 4s ease infinite',
                 }}
               >
-                Process BLIGHT
+                {t.process.title}
               </motion.span>
             </motion.h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              De la conception à l'installation, un accompagnement clair et professionnel.
+              {t.process.description}
             </p>
           </motion.div>
 
@@ -378,20 +374,16 @@ export default function BlightPage() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2, duration: 0.4 }}
               >
-                ÉTAPE 1
+                {t.process.step1.label}
               </motion.div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Conception & Visualisation
+                {t.process.step1.title}
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                Analyse de votre façade, visualisation 3D et validation des dimensions.
+                {t.process.step1.description}
               </p>
               <ul className="space-y-2">
-                {[
-                  'Analyse du contexte',
-                  'Conseil dimensions',
-                  'Validation projet',
-                ].map((item, index) => (
+                {t.process.step1.items.map((item, index) => (
                   <motion.li
                     key={index}
                     className="flex items-center gap-2 text-sm text-gray-700"
@@ -441,21 +433,16 @@ export default function BlightPage() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2, duration: 0.4 }}
               >
-                ÉTAPE 2
+                {t.process.step2.label}
               </motion.div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Fabrication & Validation
+                {t.process.step2.title}
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                Fabrication sur mesure avec matériaux de qualité, contrôle à chaque étape.
+                {t.process.step2.description}
               </p>
               <ul className="space-y-2">
-                {[
-                  'Fabrication sur mesure',
-                  'Contrôle qualité',
-                  'Validation finale',
-                  'Préparation livraison',
-                ].map((item, index) => (
+                {t.process.step2.items.map((item, index) => (
                   <motion.li
                     key={index}
                     className="flex items-center gap-2 text-sm text-gray-700"
@@ -505,21 +492,16 @@ export default function BlightPage() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2, duration: 0.4 }}
               >
-                ÉTAPE 3
+                {t.process.step3.label}
               </motion.div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Installation & Résultat
+                {t.process.step3.title}
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                Installation professionnelle, mise en service et suivi post-installation.
+                {t.process.step3.description}
               </p>
               <ul className="space-y-2 mb-4">
-                {[
-                  'Installation qualifiée',
-                  'Mise en service',
-                  'Conseils maintenance',
-                  'Suivi post-installation',
-                ].map((item, index) => (
+                {t.process.step3.items.map((item, index) => (
                   <motion.li
                     key={index}
                     className="flex items-center gap-2 text-sm text-gray-700"
@@ -832,7 +814,7 @@ export default function BlightPage() {
                 animation: 'gradient-shift 4s ease infinite',
               }}
             >
-              La suite arrive
+              {t.comingSoon.title}
             </motion.span>
           </motion.h2>
           <motion.p
@@ -842,9 +824,7 @@ export default function BlightPage() {
             viewport={{ once: true }}
             transition={{ delay: 0.2, duration: 0.6 }}
           >
-            BLIGHT travaille sur l&apos;évolution du projet.
-            L&apos;enseigne ne sera plus seulement un support visuel.
-            Ce que vous voyez aujourd&apos;hui n&apos;est que le début.
+            {t.comingSoon.description1}
           </motion.p>
           <motion.p
             className="text-sm text-gray-400 mb-10"
@@ -853,7 +833,7 @@ export default function BlightPage() {
             viewport={{ once: true }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            En attendant, nous continuons à concevoir des enseignes lumineuses simples, fiables et claires.
+            {t.comingSoon.description2}
           </motion.p>
           <Link href="/blight/devis">
             <motion.button
@@ -865,7 +845,7 @@ export default function BlightPage() {
               whileHover={{ scale: 1.03, y: -3 }}
               whileTap={{ scale: 0.97 }}
             >
-              Demander un devis
+              {t.comingSoon.requestQuote}
             </motion.button>
           </Link>
         </div>
