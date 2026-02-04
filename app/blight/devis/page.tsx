@@ -258,9 +258,6 @@ export default function BlightDevisPage() {
             {/* 1. Informations client */}
             <div className="form-group full">
               <p className="text-white font-semibold text-base mb-1">1) Informations client</p>
-              <p className="text-xs text-white/70">
-                Ces informations sont indispensables pour la livraison et le traitement interne.
-              </p>
             </div>
 
             <div className="form-group">
@@ -382,7 +379,6 @@ export default function BlightDevisPage() {
                         )}
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-white">{opt.label}</p>
-                          <p className="text-xs text-white/60">Sélection simple</p>
                         </div>
                       </div>
                     </button>
@@ -395,7 +391,6 @@ export default function BlightDevisPage() {
             {/* 3. Questions simples projet */}
             <div className="form-group full">
               <p className="text-white font-semibold text-base mb-1">3) Projet</p>
-              <p className="text-xs text-white/70">Questions simples, zéro jargon.</p>
             </div>
 
             <div className="form-group full">
